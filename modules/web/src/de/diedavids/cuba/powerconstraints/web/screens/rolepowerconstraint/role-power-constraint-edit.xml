@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd"
+        caption="msg://editorCaption"
+        focusComponent="form"
+        messagesPack="de.diedavids.cuba.powerconstraints.web.screens.rolepowerconstraint">
+    <data>
+        <instance id="rolePowerConstraintDc"
+                  class="de.diedavids.cuba.powerconstraints.entity.RolePowerConstraint"
+                  view="powerConstraint-view">
+            <loader/>
+            <instance id="constraintDc" property="constraint"/>
+        </instance>
+        <collection id="rolesDc" class="com.haulmont.cuba.security.entity.Role" view="_minimal">
+            <loader>
+                <query>select e from sec$Role e</query>
+            </loader>
+        </collection>
+    </data>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="editActions" spacing="true">
+        <hbox width="100%" spacing="true">
+            <tabSheet>
+                <tab id="configurationTab"
+                     caption="msg://configuration"
+                     spacing="true"
+                     margin="true"
+                >
+                    <form id="form" dataContainer="rolePowerConstraintDc">
+                        <column width="250px">
+                            <textField id="nameField" property="name"/>
+                            <textArea rows="5" id="descriptionField" property="description"/>
+                            <checkBox id="activeField" property="active"/>
+                            <lookupField id="roleField" property="role" optionsContainer="rolesDc"/>
+                        </column>
+                    </form>
+                </tab>
+                <tab id="constraintTab"
+                     caption="msg://de.diedavids.cuba.powerconstraints.entity/PowerConstraint.constraint"
+                     spacing="true"
+                     margin="true">
+                    <vbox spacing="true" width="400px">
+                        <button id="constraintField"
+                                align="BOTTOM_RIGHT"
+                                icon="EDIT_ACTION"/>
+                        <form id="constraintForm" width="100%" dataContainer="rolePowerConstraintDc">
+                            <column width="250px">
+                                <textField id="entityField"
+                                           caption="msg://com.haulmont.cuba.security.entity/Constraint.entityName"
+                                           property="constraint.entityName"
+                                           width="100%"
+                                           editable="false"/>
+                                <textField id="operationType"
+                                           caption="msg://com.haulmont.cuba.security.entity/Constraint.operationType"
+                                           property="constraint.operationType"
+                                           width="100%"
+                                           editable="false"/>
+                                <textField id="checkTypeField"
+                                           caption="msg://com.haulmont.cuba.security.entity/Constraint.checkType"
+                                           property="constraint.checkType"
+                                           width="100%"
+                                           editable="false"/>
+                                <textArea id="whereField"
+                                          rows="5"
+                                          caption="msg://com.haulmont.cuba.security.entity/Constraint.whereClause"
+                                          property="constraint.whereClause"
+                                          width="100%"
+                                          editable="false"/>
+                                <textArea id="joinField"
+                                          rows="5"
+                                          caption="msg://com.haulmont.cuba.security.entity/Constraint.joinClause"
+                                          property="constraint.joinClause"
+                                          width="100%"
+                                          editable="false"/>
+                                <textArea id="groovyScriptField"
+                                          rows="5"
+                                          caption="msg://com.haulmont.cuba.security.entity/Constraint.groovyScript"
+                                          property="constraint.groovyScript"
+                                          width="100%"
+                                          editable="false"/>
+                            </column>
+                        </form>
+                    </vbox>
+                </tab>
+            </tabSheet>
+        </hbox>
+        <hbox id="editActions" spacing="true">
+            <button action="windowCommitAndClose"/>
+            <button action="windowClose"/>
+        </hbox>
+    </layout>
+</window>

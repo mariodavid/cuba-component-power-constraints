@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<views xmlns="http://schemas.haulmont.com/cuba/view.xsd">
+
+    <view entity="ddcpc_PowerConstraint" name="powerConstraint-view" extends="_local">
+        <property name="constraint" view="edit"/>
+    </view>
+    <view entity="ddcpc_RolePowerConstraint" name="powerConstraint-view" extends="_local">
+        <property name="role" view="_local"/>
+        <property name="constraint" view="edit"/>
+    </view>
+    <view entity="ddcpc_UserPowerConstraint" name="powerConstraint-view" extends="_local">
+        <property name="user" view="_local"/>
+        <property name="constraint" view="edit"/>
+    </view>
+</views>

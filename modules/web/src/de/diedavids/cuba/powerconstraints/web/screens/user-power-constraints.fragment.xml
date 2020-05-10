@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<fragment xmlns="http://schemas.haulmont.com/cuba/screen/fragment.xsd">
+    <data readOnly="true">
+        <collection id="powerConstraintsDc"
+                    class="de.diedavids.cuba.powerconstraints.entity.UserPowerConstraint"
+                    view="powerConstraint-view">
+            <loader id="powerConstraintsDl">
+                <query>
+                    <![CDATA[select e from ddcpc_UserPowerConstraint e]]>
+                </query>
+            </loader>
+        </collection>
+    </data>
+    <layout expand="powerConstraintsTable"
+            spacing="true">
+        <filter id="filter"
+                applyTo="powerConstraintsTable"
+                dataLoader="powerConstraintsDl">
+            <properties include=".*"/>
+        </filter>
+        <groupTable id="powerConstraintsTable"
+                    width="100%"
+                    dataContainer="powerConstraintsDc">
+            <actions>
+                <action id="create" type="create"/>
+                <action id="edit" type="edit"/>
+                <action id="remove" type="remove"/>
+            </actions>
+            <columns>
+                <group>
+                    <column id="user" />
+                </group>
+                <column id="name"/>
+                <column id="active"/>
+                <column id="constraint.entityName"/>
+                <column id="constraint.whereClause"/>
+            </columns>
+            <rowsCount/>
+            <buttonsPanel id="buttonsPanel"
+                          alwaysVisible="true">
+                <button id="createBtn" action="powerConstraintsTable.create"/>
+                <button id="editBtn" action="powerConstraintsTable.edit"/>
+                <button id="removeBtn" action="powerConstraintsTable.remove"/>
+            </buttonsPanel>
+        </groupTable>
+        <hbox id="lookupActions" spacing="true" visible="false">
+            <button action="lookupSelectAction"/>
+            <button action="lookupCancelAction"/>
+        </hbox>
+    </layout>
+</fragment>

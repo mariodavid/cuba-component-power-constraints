@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<window xmlns="http://schemas.haulmont.com/cuba/screen/window.xsd"
+        xmlns:c="http://schemas.haulmont.com/cuba/screen/jpql_condition.xsd"
+        caption="msg://browseCaption"
+        focusComponent="contentTabSheet"
+        messagesPack="de.diedavids.cuba.powerconstraints.web.screens.powerconstraint">
+    <data readOnly="true">
+        <collection id="powerConstraintsDc"
+                    class="de.diedavids.cuba.powerconstraints.entity.PowerConstraint"
+                    view="powerConstraint-view">
+            <loader id="powerConstraintsDl">
+                <query>
+                    <![CDATA[select e from ddcpc_PowerConstraint e]]>
+                </query>
+            </loader>
+        </collection>
+    </data>
+    <dialogMode height="600"
+                width="800"/>
+    <layout expand="contentTabSheet"
+            spacing="true">
+        <tabSheet id="contentTabSheet">
+            <tab id="roleConstraints"
+                 spacing="true"
+                 margin="true"
+                 caption="msg://roles"
+                 expand="rolePowerConstraints"
+            >
+                <fragment id="rolePowerConstraints" screen="ddcpc_RolePowerConstraintsFragment"/>
+            </tab>
+            <tab id="userConstraints"
+                 spacing="true"
+                 margin="true"
+                 caption="msg://users"
+                 expand="userPowerConstraints"
+            >
+                <fragment id="userPowerConstraints" screen="ddcpc_UserPowerConstraintsFragment"/>
+            </tab>
+
+        </tabSheet>
+    </layout>
+</window>
