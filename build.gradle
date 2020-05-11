@@ -3,14 +3,9 @@ buildscript {
     repositories {
 
         maven {
-            url "https://dl.bintray.com/mariodavid/cuba-components"
-        }
-        maven {
             url 'https://dl.bintray.com/cuba-platform/main'
-
         }
         jcenter()
-
 
     }
     dependencies {
