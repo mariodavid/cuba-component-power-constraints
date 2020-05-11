@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<app-component xmlns="http://schemas.haulmont.com/cuba/app-component.xsd"
+               dependsOn="com.haulmont.cuba">
+
+    <module name="global" blocks="*">
+        <artifact name="powerconstraints-global" appJar="true"/>
+
+        <property name="cuba.persistenceConfig" value="+de/diedavids/cuba/powerconstraints/persistence.xml"/>
+        <property name="cuba.metadataConfig" value="+de/diedavids/cuba/powerconstraints/metadata.xml"/>
+        <property name="cuba.viewsConfig" value="+de/diedavids/cuba/powerconstraints/views.xml"/>
+    </module>
+    <module name="core" dependsOn="global" blocks="core">
+        <artifact name="powerconstraints-core" appJar="true"/>
+        <artifact name="powerconstraints-core" classifier="db" ext="zip" configuration="dbscripts"/>
+
+        <property name="cuba.springContextConfig" value="+de/diedavids/cuba/powerconstraints/spring.xml"/>
+        <property name="cuba.mainMessagePack" value="+de.diedavids.cuba.powerconstraints.core"/>
+    </module>
+    <module name="web" dependsOn="global" blocks="web">
+        <artifact name="powerconstraints-web" appJar="true"/>
+        <artifact name="powerconstraints-web" classifier="web" ext="zip" configuration="webcontent"/>
+
+        <property name="cuba.springContextConfig" value="+de/diedavids/cuba/powerconstraints/web-spring.xml"/>
+        <property name="cuba.dispatcherSpringContextConfig"
+                  value="+de/diedavids/cuba/powerconstraints/web-dispatcher-spring.xml"/>
+        <property name="cuba.windowConfig" value="+de/diedavids/cuba/powerconstraints/web-screens.xml"/>
+        <property name="cuba.menuConfig" value="+de/diedavids/cuba/powerconstraints/web-menu.xml"/>
+        <property name="cuba.permissionConfig" value="+de/diedavids/cuba/powerconstraints/web-permissions.xml"/>
+        <property name="cuba.mainMessagePack" value="+de.diedavids.cuba.powerconstraints.web"/>
+    </module>
+</app-component>
