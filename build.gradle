@@ -1,4 +1,3 @@
-
 buildscript {
     ext.cubaVersion = '7.2.4'
     repositories {
@@ -8,11 +7,11 @@ buildscript {
         }
         maven {
             url 'https://dl.bintray.com/cuba-platform/main'
-            
+
         }
         jcenter()
 
-        
+
     }
     dependencies {
         classpath "com.haulmont.gradle:cuba-plugin:$cubaVersion"
@@ -93,7 +92,7 @@ dependencies {
     appComponent("com.haulmont.cuba:cuba-global:$cubaVersion")
 }
 
-def hsql = 'org.hsqldb:hsqldb:2.4.1'
+def postgres = 'org.postgresql:postgresql:42.2.9'
 
 allprojects {
     apply plugin: 'net.saliman.cobertura'
@@ -131,10 +130,9 @@ configure([globalModule, coreModule, webModule]) {
     apply(plugin: 'cuba')
 
     dependencies {
-            testCompile('org.junit.jupiter:junit-jupiter-api:5.5.2')
-            testCompile('org.junit.jupiter:junit-jupiter-engine:5.5.2')
-            testCompile('org.junit.vintage:junit-vintage-engine:5.5.2')
-
+        testCompile('org.junit.jupiter:junit-jupiter-api:5.5.2')
+        testCompile('org.junit.jupiter:junit-jupiter-engine:5.5.2')
+        testCompile('org.junit.vintage:junit-vintage-engine:5.5.2')
 
 
         testCompile 'org.mockito:mockito-core:3.2.4'
@@ -146,7 +144,7 @@ configure([globalModule, coreModule, webModule]) {
 
 
         testCompile("org.assertj:assertj-core:3.11.1")
-        }
+    }
 
     task sourceJar(type: Jar) {
         from file('src')
@@ -155,7 +153,7 @@ configure([globalModule, coreModule, webModule]) {
 
     artifacts {
         archives sourceJar
-    } 
+    }
     test {
         useJUnitPlatform()
     }
@@ -240,7 +238,7 @@ configure(globalModule) {
         outputs.file dstFile
         doLast {
             dstDir.mkdirs()
-            dstFile.write(srcFile.readLines().findAll{ !it.contains('.entity.dummy.') }.join('\n'))
+            dstFile.write(srcFile.readLines().findAll { !it.contains('.entity.dummy.') }.join('\n'))
         }
     }
 
@@ -286,8 +284,8 @@ configure(coreModule) {
     dependencies {
         compile(globalModule)
         compileOnly(servletApi)
-        jdbc(hsql)
-        testRuntime(hsql)
+        jdbc(postgres)
+        testRuntime(postgres)
     }
 
     task cleanConf(description: 'Cleans up conf directory', type: Delete) {
