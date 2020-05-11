@@ -26,7 +26,6 @@ public class DdcpcTestContainer extends TestContainer {
         autoConfigureDataSource();
     }
 
-    
 
     public static class Common extends DdcpcTestContainer {
 

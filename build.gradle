@@ -2,6 +2,10 @@
 buildscript {
     ext.cubaVersion = '7.2.4'
     repositories {
+
+        maven {
+            url "https://dl.bintray.com/mariodavid/cuba-components"
+        }
         maven {
             url 'https://dl.bintray.com/cuba-platform/main'
             
@@ -12,8 +16,20 @@ buildscript {
     }
     dependencies {
         classpath "com.haulmont.gradle:cuba-plugin:$cubaVersion"
+
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.0"
+
+        classpath 'net.saliman:gradle-cobertura-plugin:2.5.0'
+        classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2"
     }
 }
+
+
+plugins {
+    id 'net.researchgate.release' version '2.8.0'
+}
+
+apply plugin: "com.github.kt3k.coveralls"
 
 def modulePrefix = 'powerconstraints'
 
@@ -28,8 +44,48 @@ apply(plugin: 'cuba')
 cuba {
     artifact {
         group = 'de.diedavids.cuba.powerconstraints'
-        version = '0.1'
-        isSnapshot = true
+        version = project.properties['version'].replaceAll('-SNAPSHOT', '')
+        isSnapshot = project.properties['version'].contains('-SNAPSHOT')
+    }
+}
+
+subprojects {
+    apply plugin: 'com.jfrog.bintray'
+
+    bintray {
+        user = System.getenv('BINTRAY_USERNAME')
+        key = System.getenv('BINTRAY_PASSWORD')
+
+        configurations = ['archives']
+
+        publish = true
+
+        override = false
+
+        // metadata
+        pkg {
+            repo = 'cuba-components'
+            name = 'cuba-component-instant-launcher'
+            desc = 'CUBA component for defining app shortcuts through instant launchers'
+            userOrg = 'mariodavid'
+
+            websiteUrl = 'https://github.com/mariodavid/cuba-component-instant-launcher'
+            issueTrackerUrl = 'https://github.com/mariodavid/cuba-component-instant-launcher/issues'
+            vcsUrl = 'https://github.com/mariodavid/cuba-component-instant-launcher.git'
+
+            licenses = ["Apache-2.0"]
+
+            labels = ['instant-launcher', 'cuba-patform', 'cuba-component']
+            githubRepo = 'mariodavid/cuba-component-instant-launcher'
+            githubReleaseNotesFile = 'CHANGELOG.md'
+
+            version {
+                name = "${cuba.artifact.version}"
+                desc = ''
+                released = new Date()
+                vcsTag = "${cuba.artifact.version}"
+            }
+        }
     }
 }
 
@@ -39,6 +95,36 @@ dependencies {
 
 def hsql = 'org.hsqldb:hsqldb:2.4.1'
 
+allprojects {
+    apply plugin: 'net.saliman.cobertura'
+}
+
+
+def files = subprojects
+        .findAll { !it.name.toLowerCase().contains('theme') }
+        .collect { new File(it.projectDir, '/build/cobertura/cobertura.ser') }
+def sourceDirs = subprojects
+        .findAll { !it.name.toLowerCase().contains('theme') }
+        .collect { new File(it.projectDir, '/src') }
+
+cobertura {
+    coverageFormats = ['html', 'xml']
+    coverageMergeDatafiles = files
+    coverageCheckTotalBranchRate = 0
+    coverageCheckTotalLineRate = 0
+    coverageCheckHaltOnFailure = true
+    coverageSourceDirs = sourceDirs
+//    coverageCheckLineRate = 1
+    coverageCheckRegexes = [[regex: '.*\\$.*', branchRate: 0, lineRate: 0]]
+
+}
+
+
+test.dependsOn(subprojects.collect { ":${it.name}:test" })
+test.finalizedBy(project.tasks.cobertura)
+test.finalizedBy(project.tasks.coberturaCheck)
+
+
 configure([globalModule, coreModule, webModule]) {
     apply(plugin: 'java')
     apply(plugin: 'maven')
@@ -47,7 +133,19 @@ configure([globalModule, coreModule, webModule]) {
     dependencies {
             testCompile('org.junit.jupiter:junit-jupiter-api:5.5.2')
             testCompile('org.junit.jupiter:junit-jupiter-engine:5.5.2')
-            testCompile('org.junit.vintage:junit-vintage-engine:5.5.2')  
+            testCompile('org.junit.vintage:junit-vintage-engine:5.5.2')
+
+
+
+        testCompile 'org.mockito:mockito-core:3.2.4'
+        testCompile 'org.mockito:mockito-junit-jupiter:3.2.4'
+
+
+        testCompile('org.spockframework:spock-core:1.2-groovy-2.5')
+        testCompile('org.springframework:spring-test:4.3.1.RELEASE')
+
+
+        testCompile("org.assertj:assertj-core:3.11.1")
         }
 
     task sourceJar(type: Jar) {
@@ -63,6 +161,58 @@ configure([globalModule, coreModule, webModule]) {
     }
 }
 
+configure([globalModule, coreModule, webModule]) {
+    apply(plugin: 'groovy')
+    apply plugin: 'net.saliman.cobertura'
+    apply plugin: 'codenarc'
+
+    codenarc {
+        toolVersion = "1.3"
+        ignoreFailures = false
+        reportFormat = 'html'
+        reportsDir = project.file("build/reports/codenarc")
+    }
+
+    codenarcMain {
+        configFile = rootProject.file("config/codenarc/rulesMain.groovy")
+    }
+    codenarcTest {
+        configFile = rootProject.file("config/codenarc/rulesTests.groovy")
+    }
+
+
+    cobertura {
+        coverageFormats = ['html', 'xml']
+        coverageIgnoreTrivial = true
+        coverageIgnores = ['org.slf4j.Logger.*']
+        coverageReportDir = new File("$buildDir/reports/cobertura")
+
+        coverageExcludes = [
+                '.*Enum',
+        ]
+    }
+
+    test.finalizedBy(project.tasks.cobertura)
+    test.finalizedBy(project.tasks.coberturaCheck)
+    sourceSets {
+        main {
+            groovy { srcDirs = ["src"] }
+            // new config
+            java.outputDir = new File(project.buildDir, "classes/main")
+            groovy.outputDir = new File(project.buildDir, "classes/main")
+        }
+        test {
+            groovy { srcDirs = ["test"] }
+            // new config
+            java.outputDir = new File(project.buildDir, "classes/test")
+            groovy.outputDir = new File(project.buildDir, "classes/test")
+        }
+    }
+
+    sourceSets.main.output.classesDirs.setFrom(new File(project.buildDir, "classes/main"))
+    sourceSets.test.output.classesDirs.setFrom(new File(project.buildDir, "classes/test"))
+
+}
 
 configure(globalModule) {
     dependencies {
@@ -76,10 +226,57 @@ configure(globalModule) {
         main {
             enabled = true
         }
+        test {
+            enabled = true
+            persistenceConfig = 'de/diedavids/cuba/powerconstraints/test-persistence.xml'
+        }
     }
+
+    task filterDummyEntities {
+        ext.srcFile = file('src/de/diedavids/cuba/powerconstraints/persistence.xml')
+        ext.dstDir = file("$buildDir/tmp/filtered")
+        ext.dstFile = new File(ext.dstDir, "de/diedavids/cuba/powerconstraints/persistence.xml")
+        inputs.file srcFile
+        outputs.file dstFile
+        doLast {
+            dstDir.mkdirs()
+            dstFile.write(srcFile.readLines().findAll{ !it.contains('.entity.dummy.') }.join('\n'))
+        }
+    }
+
+    jar {
+        exclude '**/entity/dummy/*'
+        exclude { it.file == file("$buildDir/resources/main/de/diedavids/cuba/powerconstraints/persistence.xml") }
+        from "$buildDir/tmp/filtered"
+
+        manifest {
+            attributes('App-Component-Id': cuba.artifact.group)
+            attributes('App-Component-Version': cuba.artifact.version + (cuba.artifact.isSnapshot ? '-SNAPSHOT' : ''))
+        }
+    }
+    jar.dependsOn filterDummyEntities
+
+    sourceJar {
+        exclude '**/entity/dummy/*'
+        exclude {
+            it.file.name == 'persistence.xml' && sourceSets.main.java.srcDirs.contains(it.file.parentFile)
+        }
+        from "$buildDir/tmp/filtered"
+    }
+    sourceJar.dependsOn filterDummyEntities
+
 }
 
 configure(coreModule) {
+
+    entitiesEnhancing {
+        main { enabled = true }
+        test {
+            enabled = true
+            persistenceConfig = 'de/diedavids/cuba/powerconstraints/test-persistence.xml'
+        }
+
+    }
 
     configurations {
         jdbc
@@ -102,10 +299,50 @@ configure(coreModule) {
         appJars(modulePrefix + '-global', modulePrefix + '-core')
     }
 
+
+    def hsqlDbName = 'ddcil'
+    def hsqlPort = 9010
+
+    task startDb(description: 'Starts local HSQLDB server', type: CubaHsqlStart) {
+        dbPort = hsqlPort
+        dbName = hsqlDbName
+    }
+
+    task stopDb(description: 'Stops local HSQLDB server', type: CubaHsqlStop) {
+        dbPort = hsqlPort
+        dbName = hsqlDbName
+    }
+
+    task removeDb(description: 'Removes local HSQL database', type: Delete) {
+        delete new File("$rootProject.projectDir/data")
+    }
+
+    task killDb(description: "Kill local HSQLDB server process running on port $hsqlPort", type: CubaKillProcess) {
+        port = hsqlPort
+    }
+
+
     task createDb(dependsOn: assembleDbScripts, description: 'Creates local database', type: CubaDbCreation) {
     }
 
     task updateDb(dependsOn: assembleDbScripts, description: 'Updates local database', type: CubaDbUpdate) {
+    }
+
+
+    task createTestDb(dependsOn: assembleDbScripts, description: 'Creates local HSQL database', type: CubaDbCreation) {
+        dbms = 'hsql'
+        host = "localhost:$hsqlPort"
+        dbName = hsqlDbName
+        dbUser = 'sa'
+        dbPassword = ''
+        auxiliaryScript = file('test/de/diedavids/cuba/powerconstraints/create-db.sql')
+    }
+    task createIntegrationtestDb(dependsOn: assembleDbScripts, description: 'Creates database for Integrationtests', type: CubaDbCreation) {
+        dbms = 'postgres'
+        dbName = System.getenv('DATABASE_DB_NAME')
+        dbUser = System.getenv('DATABASE_USERNAME')
+        dbPassword = System.getenv('DATABASE_PASSWORD')
+        host = System.getenv('DATABASE_HOST') + ':' + System.getenv('DATABASE_PORT')
     }
 }
 
@@ -150,6 +387,7 @@ configure(webModule) {
     }
 }
 
+
 task undeploy(type: Delete, dependsOn: ":${modulePrefix}-web:cleanConf") {
     delete("$cuba.tomcat.dir/shared")
     delete("$cuba.tomcat.dir/webapps/${modulePrefix}-core")
@@ -167,3 +405,7 @@ task restart(dependsOn: ['stop', ":${modulePrefix}-core:deploy", ":${modulePrefi
 }
 restart.finalizedBy start
 
+
+clean {
+    delete = ['build/libs', 'build/tmp']
+}
