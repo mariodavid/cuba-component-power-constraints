@@ -42,7 +42,7 @@ jobs:
 
 
       - name: Run Integration Tests
-        run: ./gradlew test
+        run: ./gradlew test --scan
         env:
           # The application uses this ENV variable for the 'integrationtest' spring profile (see integrationtest-app.properties)
           JDBC_DATABASE_URL: jdbc:postgresql://localhost:${{ job.services.postgres.ports[5432] }}/power-constraints?user=postgres&password=postgres
